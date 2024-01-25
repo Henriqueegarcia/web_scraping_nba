@@ -1,0 +1,37 @@
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
+from bs4 import BeautifulSoup
+import pandas as pd
+import time
+import math
+import re
+from selenium.webdriver.chrome.options import Options
+
+url = 'https://pt.global.nba.com/statistics/'
+headers = {'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 OPR/105.0.0.0"}
+options = Options()
+options.headless = True
+driver = webdriver.Chrome()
+driver.get(url)
+time.sleep(2)
+soup = BeautifulSoup(driver.page_source, 'html.parser')
+table = soup.find('table', class_ = 'p-datatable-table')
+headers = table.find_all('th')
+title = []
+titles = []
+for i in headers:
+    title = i.get_text()
+    titles.append(title)
+df = pd.DataFrame(columns=titles)
+rows = table.find_all('tr')
+data = []
+for i in rows[1:]:
+    data = i.find_all('td')
+    row = [tr.get_text() for tr in data]
+    l = len(df)
+    df.loc[l] = row
+
+driver.quit()
+
+df.head()
